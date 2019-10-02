@@ -1,0 +1,14 @@
+test_taw_username = #TAW TEST ACCOUNT USERNAME#
+test_taw_password = #TAW TEST ACCOUNT PASSWORD#
+
+prod_taw_username = #TAW PRODUCTION ACCOUNT USERNAME#
+prod_taw_password = #TAW PRODUCTION ACCOUNT PASSWORD#
+
+taw_username = #test_taw_username | prod_taw_username#
+taw_password = #test_taw_password | prod_taw_password#
+
+taw_url = #TAW API SERVICES URL#
+
+ord_auth = #ORDORO AUTH HEADER# 
+ord_url = #ORDER-RELATED ORDORO API URL#
+ord_legacy_url = #NON-ORDER-RELATED ORDORO API URL#
