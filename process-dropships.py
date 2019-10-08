@@ -171,7 +171,7 @@ def get_tracking():
                 log(f"No tracking info returned for {PONumber}, skipping...")
                 continue
 
-            log(f"[{PONumber}] Tracking info found! Parsing...")
+            log(f"[{PONumber}] Response received, checking...")
 
             i = 1
             for record in root.findall('Record'):
@@ -212,23 +212,23 @@ def get_tracking():
                     # SEND TRACKING INFO TO ORDORO
                     r = ordoro.post_shipping_info(PONumber, data)
 
+                    log(f"[{PONumber}] Removing 'Awaiting Tracking' tag...")
+                    r = ordoro.delete_tag_await_track(PONumber)
+
                     log(f"[{PONumber}] Response from ordoro:\n\r{r.content.decode('UTF-8')}")
                 else:
                     taw_invoice_num = record.find('InvoiceNumber').text.strip()
                     tracking_number = record.find('TrackNum').text.strip()
+
+                    if tracking_number == "":
+                        continue
+
                     ordoro.post_comment(
                         PONumber,
                         f'Additional tracking information: '
                         f'\n\rTAW Order ID: {taw_invoice_num}'
                         f'\n\rTracking Number: {tracking_number}')
                 i = i + 1
-
-            log(f"[{PONumber}] Removing 'Awaiting Tracking' tag...")
-
-            # DELETE AWAITING TRACKING TAG FROM ORDER
-            r = ordoro.delete_tag_await_track(PONumber)
-
-            log(f"[{PONumber}] Response from ordoro:\n\r{r.content.decode('UTF-8')}")
 
         except Exception as err:
             log(
