@@ -15,6 +15,13 @@ else:
 
 taw_url = #TAW API SERVICES URL#
 
-ord_auth = #ORDORO AUTH HEADER# 
+ord_test_auth = #TEST ORDORO AUTH KEY#
+ord_live_auth = #LIVE ORDORO AUTH KEY#
+
+if test:
+    ord_auth = ord_test_auth
+else:
+    ord_auth = ord_live_auth
+
 ord_url = #ORDER-RELATED ORDORO API URL#
 ord_legacy_url = #NON-ORDER-RELATED ORDORO API URL#

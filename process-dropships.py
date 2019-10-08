@@ -240,26 +240,34 @@ def get_tracking():
 
 inp = ''
 
-while (inp.lower() != 'q'):
-    print("\n\rWhat would you like to do?\n\r")
+while inp.lower() != 'q':
+    if cfg.test:
+        print("\n\r*** TEST MODE ***")
+    else:
+        print("\n\r!!! LIVE MODE !!!")
+    print("What would you like to do?\n\r")
     print("\t1 Submit 'Dropship Ready' orders to TAW")
     print("\t2 Get tracking info from TAW for 'Awaiting Tracking' orders")
     print("\t3 Both")
+    print("\t4 Switch between LIVE and TEST modes")
     print("\tq Quit\n\r")
 
-    while (True):
+    while True:
         print("=> ", end='')
         inp = input()
 
         if inp.lower() == 'q':
             exit()
 
-        if (inp in ['1', '3']):
+        if inp == '4':
+            cfg.test = not cfg.test
+
+        if inp in ['1', '3']:
             submit_dropships()
 
-        if (inp in ['2', '3']):
+        if inp in ['2', '3']:
             get_tracking()
 
-        if (inp in ['1', '2', '3']):
+        if inp in ['1', '2', '3', '4']:
             inp = ''
             break
