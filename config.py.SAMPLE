@@ -1,3 +1,5 @@
+test = False # If True, only run on orders with 'test' in the order number
+
 test_taw_username = #TAW TEST ACCOUNT USERNAME#
 test_taw_password = #TAW TEST ACCOUNT PASSWORD#
 
