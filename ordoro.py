@@ -69,7 +69,14 @@ def delete_tag_drop_ready(order_id):
 	return delete_tag(order_id, tag_drop_ready)
 
 
+def delete_tag_await_track(order_id):
+	return delete_tag(order_id, tag_await_track)
+
+
 def post_comment(order_id, comment):
 	data = json.dumps({'comment': comment})
 	return requests.post(f"{url}/order/{order_id}/comment", headers=headers, data=data)
 
+
+def post_shipping_info(order_id, data):
+	return requests.post(f"{url}/order/{order_id}/shipping_info", data=json.dumps(data), headers=headers)

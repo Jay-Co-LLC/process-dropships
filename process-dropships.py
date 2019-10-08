@@ -151,11 +151,8 @@ def submit_dropships():
 
 
 def get_tracking():
-    #### GET ALL AWAITING TRACKING ORDERS FROM ORDORO ###
     log("Requesting all orders with 'Awaiting Tracking' from ordoro...")
-
-    r = requests.get(f"{ord_url}/order", params=ord_get_await_tracking_orders_params, headers=ord_headers)
-    robj = json.loads(r.content)
+    robj = ordoro.get_await_track_orders()
 
     ord_orders = robj['order']
 
@@ -163,7 +160,9 @@ def get_tracking():
 
     for eachOrder in ord_orders:
         PONumber = eachOrder['order_number']
-        if (PONumber != 'M-7-114-9984293-2917007-1'):
+
+        # If in 'test' mode, only process orders with 'test' in the order number
+        if cfg.test and 'test' not in PONumber.lower():
             continue
 
         log(f"\n\r---- {PONumber} ----")
@@ -201,14 +200,14 @@ def get_tracking():
             log(f"[{PONumber}] Tracking number: {data['tracking_number']}")
 
             # IF NO TRACKING NUMBER, LOG IT AND GO ON TO THE NEXT ONE
-            if (data['tracking_number'] == ""):
+            if data['tracking_number'] == "":
                 log(f"[{PONumber}] No tracking number found. Skipping.")
                 continue
 
             data['carrier_name'] = record.find('Type').text.strip()
 
             # IF NO VENDOR, LOG IT AND GO ON TO THE NEXT ONE
-            if (data['carrier_name'] == ""):
+            if data['carrier_name'] == "":
                 log(f"[{PONumber}] No vendor found. Skipping.")
                 continue
 
@@ -219,13 +218,13 @@ def get_tracking():
             log(f"[{PONumber}] Sending to ordoro...")
 
             # SEND TRACKING INFO TO ORDORO
-            r = requests.post(f"{ord_url}/order/{PONumber}/shipping_info", data=json.dumps(data), headers=ord_headers)
+            r = ordoro.post_shipping_info(PONumber, data)
 
             log(f"[{PONumber}] Response from ordoro:\n\r{r.content.decode('UTF-8')}")
             log(f"[{PONumber}] Removing 'Awaiting Tracking' tag...")
 
             # DELETE AWAITING TRACKING TAG FROM ORDER
-            r = requests.delete(f"{ord_url}/order/{PONumber}/tag/{ord_tag_id_await_tracking}", headers=ord_headers)
+            r = ordoro.delete_tag_await_track(PONumber)
 
             log(f"[{PONumber}] Response from ordoro:\n\r{r.content.decode('UTF-8')}")
 

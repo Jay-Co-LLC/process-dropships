@@ -1,13 +1,17 @@
-test = False # If True, only run on orders with 'test' in the order number
+test = False # If True, only run on orders with 'test' in the order number, use test creds for TAW
 
 test_taw_username = #TAW TEST ACCOUNT USERNAME#
 test_taw_password = #TAW TEST ACCOUNT PASSWORD#
 
-prod_taw_username = #TAW PRODUCTION ACCOUNT USERNAME#
-prod_taw_password = #TAW PRODUCTION ACCOUNT PASSWORD#
+live_taw_username = #TAW PRODUCTION ACCOUNT USERNAME#
+live_taw_password = #TAW PRODUCTION ACCOUNT PASSWORD#
 
-taw_username = #test_taw_username | prod_taw_username#
-taw_password = #test_taw_password | prod_taw_password#
+if test:
+    taw_username = test_taw_username
+    taw_password = test_taw_password
+else:
+    taw_username = live_taw_username
+    taw_password = live_taw_password
 
 taw_url = #TAW API SERVICES URL#
 
