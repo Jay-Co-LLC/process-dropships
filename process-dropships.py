@@ -1,25 +1,16 @@
-import requests
-import json
 import xml.etree.ElementTree as ET
 import datetime
 import config as cfg
 import ordoro
+import taw
 
 log_file = f"LOG-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.txt"
 
-taw_u = cfg.taw_username
-taw_p = cfg.taw_password
-taw_url = cfg.taw_url
 
-taw_headers = {
-    'Content-Type': 'application/x-www-form-urlencoded',
-}
-
-
-def log(str):
-    print(str, flush=True)
+def log(text):
+    print(text, flush=True)
     with open(log_file, 'a') as file:
-        file.write(f"{str}\n\r")
+        file.write(f"{text}\n\r")
 
 
 def submit_dropships():
@@ -113,8 +104,7 @@ def submit_dropships():
         log(f"Sending XML to TAW:\n\r{full_xml}")
 
         # SEND ORDER TO TAW
-        r = requests.post(f"{taw_url}/SubmitOrder", data=f"UserID={taw_u}&Password={taw_p}&OrderInfo={full_xml}",
-                          headers=taw_headers)
+        r = taw.post_submit_order(full_xml)
 
         status = ""
 
@@ -130,9 +120,6 @@ def submit_dropships():
 
                 log(f"Adding 'Awaiting Tracking' tag...")
                 ordoro.post_tag_await_track(parsed_order['PONumber'])
-
-                log(f"Adding comment with TAW Order ID {taw_order_id}")
-                ordoro.post_comment(parsed_order['PONumber'], f'TAW_ORD_ID:{taw_order_id}')
             else:
                 log(f"Status is not 'PASS': {status}")
 
@@ -140,11 +127,13 @@ def submit_dropships():
                 ordoro.post_tag_drop_fail(parsed_order['PONumber'])
         except Exception as err:
             log(f"Error parsing response. Exception:\n\r{err}\n\rLast Response:\n\r{r.content.decode('UTF-8')}")
+
             log(f"Adding 'Dropship Failed' tag...")
             ordoro.post_tag_drop_fail(parsed_order['PONumber'])
 
         log(f"Removing 'Dropship Ready' tag...")
         ordoro.delete_tag_drop_ready(parsed_order['PONumber'])
+
         log(f"Done processing order number {parsed_order['PONumber']}")
 
     log("Done submitting dropships!")
@@ -169,8 +158,7 @@ def get_tracking():
         log(f"[{PONumber}] Requesting tracking info from TAW...")
 
         # ASK FOR TRACKING INFO FROM TAW
-        r = requests.post(f"{taw_url}/GetTrackingInfo",
-                          data=f"UserID={taw_u}&Password={taw_p}&PONumber={PONumber}&OrderNumber=", headers=taw_headers)
+        r = taw.post_get_tracking(PONumber)
 
         log(f"[{PONumber}] Response from TAW:\n\r{r.content.decode('UTF-8')}")
 
