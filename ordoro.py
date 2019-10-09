@@ -29,20 +29,22 @@ tag_await_track = {
 supplier_taw_id = 44251
 
 
-def get_orders(tag):
+def get_orders(tag, supplier=None):
 	params = {
 		'tag': tag['name'],
 		'limit': 100
 	}
+	if supplier:
+		params['supplier'] = supplier
 	return requests.get(f"{url}/order", params=params, headers=headers).json()
 
 
-def get_dropship_ready_orders():
-	return get_orders(tag_drop_ready)
+def get_dropship_ready_orders(supplier=None):
+	return get_orders(tag_drop_ready, supplier)
 
 
-def get_await_track_orders():
-	return get_orders(tag_await_track)
+def get_await_track_orders(supplier=None):
+	return get_orders(tag_await_track, supplier)
 
 
 def get_product(sku):
