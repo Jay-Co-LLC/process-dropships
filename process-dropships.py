@@ -36,7 +36,6 @@ def submit_dropships():
         log(f"Parsing {parsed_order['PONumber']}...")
 
         parsed_order['ReqDate'] = eachOrder['order_placed_date']
-        log(f"Order Date: {parsed_order['ReqDate']}")
 
         parsed_order['ShipTo'] = {}
         parsed_order['ShipTo']['Name'] = eachOrder['shipping_address']['name']
@@ -55,14 +54,40 @@ def submit_dropships():
             # Get the product from ordoro
             rob = ordoro.get_product(ord_sku)
 
-            taw_sku = ''
+            # If it's a kit...
+            if rob['is_kit_parent']:
+                # Get kit quantity
+                kit_qty = eachLine['quantity']
 
-            # Loop through suppliers until you find TAW
-            for eachSupplier in rob['suppliers']:
-                if eachSupplier['id'] == ordoro.supplier_taw_id:
-                    taw_sku = eachSupplier['supplier_sku']
+                # Loop through kit_components
+                for eachComponent in rob['kit_components']:
+                    # Get product object from ordoro for each product
+                    component_obj = ordoro.get_product(eachComponent['sku'])
 
-            parsed_order['Parts'].append({'PartNo': taw_sku, 'Qty': eachLine['quantity']})
+                    component_sku = ''
+                    # Get the supplier sku of the product
+                    for eachSupplier in component_obj['suppliers']:
+                        if eachSupplier['id'] == ordoro.supplier_taw_id:
+                            component_sku = eachSupplier['supplier_sku']
+
+                    # Get the quantity of the product included in the kit
+                    component_qty = eachComponent['quantity']
+
+                    # quantity needed = quantity included in kit * kit quantity
+                    needed_qty = int(component_qty * kit_qty)
+
+                    # Add product to parsed_order['Parts']
+                    parsed_order['Parts'].append({'PartNo': component_sku, 'Qty': needed_qty})
+            else:
+                # If not a kit, just add the supplier sku and quantity to the order
+                taw_sku = ''
+
+                # Loop through suppliers until you find TAW
+                for eachSupplier in rob['suppliers']:
+                    if eachSupplier['id'] == ordoro.supplier_taw_id:
+                        taw_sku = eachSupplier['supplier_sku']
+
+                parsed_order['Parts'].append({'PartNo': taw_sku, 'Qty': eachLine['quantity']})
 
         for eachTag in eachOrder['tags']:
             if eachTag['text'] == 'Signature Required':
@@ -89,7 +114,7 @@ def submit_dropships():
         for eachPart in parsed_order['Parts']:
             partno = eachPart['PartNo']
             qty = eachPart['Qty']
-            xml_pt2 = f"{xml_pt2}<Part Number='{partno}'><Qty>{qty}</Qty></Part>"
+            xml_pt2 = f"{xml_pt2}<Part Number='{partno}'><Qty>{qty}</Qty></Part>\n\r"
 
         xml_pt3 = ""
 
@@ -105,8 +130,6 @@ def submit_dropships():
 
         # SEND ORDER TO TAW
         r = taw.post_submit_order(full_xml)
-
-        status = ""
 
         try:
             # PARSE XML RESPONSE FROM TAW
@@ -168,7 +191,7 @@ def get_tracking():
 
             records = root.findall('Record')
             if len(records) < 1:
-                log(f"No tracking info returned for {PONumber}, skipping...")
+                log(f"No response received for {PONumber}, skipping...")
                 continue
 
             log(f"[{PONumber}] Response received, checking...")
