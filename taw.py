@@ -38,7 +38,7 @@ def __get_pass():
 
 def submit_dropships():
     # GET ALL DROPSHIP READY ORDERS FROM ORDORO
-    logger.info("Requesting all orders with 'Dropship Ready' from ordoro...")
+    logger.info("Requesting all TAW orders with 'Dropship Ready' from Ordoro...")
 
     robj = ordoro.get_dropship_ready_orders(ordoro.supplier_taw_id)
 
@@ -189,7 +189,7 @@ def submit_dropships():
 
         logger.info(f"Done processing order number {parsed_order['PONumber']}")
 
-    logger.info("Done submitting dropships!")
+    logger.info("Done submitting TAW dropships.")
 
 
 def get_tracking():

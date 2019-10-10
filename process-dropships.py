@@ -2,6 +2,7 @@ import datetime
 import logging
 import config as cfg
 import taw
+import meyer
 
 log_file = f"LOG-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.txt"
 logger = logging.getLogger('process-dropships')
@@ -11,11 +12,13 @@ logger.addHandler(logging.StreamHandler())
 
 
 def submit_dropships():
-    taw.submit_dropships()
+    #taw.submit_dropships()
+    meyer.submit_dropships()
 
 
 def get_tracking():
-    taw.get_tracking()
+    #taw.get_tracking()
+    meyer.get_tracking()
 
 
 # Sets credentials in config based on 'test' flag
@@ -29,8 +32,8 @@ while inp.lower() != 'q':
     else:
         print("\n\r!!! LIVE MODE !!!")
     print("What would you like to do?\n\r")
-    print("\t1 Submit 'Dropship Ready' orders to TAW")
-    print("\t2 Get tracking info from TAW for 'Awaiting Tracking' orders")
+    print("\t1 Submit Drophships")
+    print("\t2 Get Tracking Info")
     print("\t3 Both")
     print("\t4 Switch between LIVE and TEST modes")
     print("\tq Quit\n\r")
