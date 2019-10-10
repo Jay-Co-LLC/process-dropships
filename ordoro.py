@@ -2,14 +2,8 @@ import requests
 import json
 import config
 
-auth = config.ord_auth
 url = config.ord_url
 legacy_url = config.ord_legacy_url
-
-headers = {
-	'Authorization': auth,
-	'Content-Type': 'application/json'
-}
 
 tag_drop_ready = {
 	'id': '30093',
@@ -29,6 +23,13 @@ tag_await_track = {
 supplier_taw_id = 44251
 
 
+def __get_headers():
+	return {
+		'Authorization': config.ord_auth,
+		'Content-Type': 'application/json'
+	}
+
+
 def __get_orders(tag, supplier=None):
 	params = {
 		'tag': tag['name'],
@@ -36,7 +37,7 @@ def __get_orders(tag, supplier=None):
 	}
 	if supplier:
 		params['supplier'] = supplier
-	return requests.get(f"{url}/order", params=params, headers=headers).json()
+	return requests.get(f"{url}/order", params=params, headers=__get_headers()).json()
 
 
 def get_dropship_ready_orders(supplier=None):
@@ -48,11 +49,11 @@ def get_await_track_orders(supplier=None):
 
 
 def get_product(sku):
-	return requests.get(f"{legacy_url}/product/{sku}/", headers=headers).json()
+	return requests.get(f"{legacy_url}/product/{sku}/", headers=__get_headers()).json()
 
 
 def __post_tag(order_id, tag):
-	return requests.post(f"{url}/order/{order_id}/tag/{tag['id']}", headers=headers)
+	return requests.post(f"{url}/order/{order_id}/tag/{tag['id']}", headers=__get_headers())
 
 
 def post_tag_drop_fail(order_id):
@@ -64,7 +65,7 @@ def post_tag_await_track(order_id):
 
 
 def __delete_tag(order_id, tag):
-	return requests.delete(f"{url}/order/{order_id}/tag/{tag['id']}", headers=headers)
+	return requests.delete(f"{url}/order/{order_id}/tag/{tag['id']}", headers=__get_headers())
 
 
 def delete_tag_drop_ready(order_id):
@@ -77,8 +78,8 @@ def delete_tag_await_track(order_id):
 
 def post_comment(order_id, comment):
 	data = json.dumps({'comment': comment})
-	return requests.post(f"{url}/order/{order_id}/comment", headers=headers, data=data)
+	return requests.post(f"{url}/order/{order_id}/comment", headers=__get_headers(), data=data)
 
 
 def post_shipping_info(order_id, data):
-	return requests.post(f"{url}/order/{order_id}/shipping_info", data=json.dumps(data), headers=headers)
+	return requests.post(f"{url}/order/{order_id}/shipping_info", data=json.dumps(data), headers=__get_headers())

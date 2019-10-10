@@ -5,8 +5,6 @@ import config
 import ordoro
 import logging
 
-username = config.taw_username
-password = config.taw_password
 url = config.taw_url
 
 headers = {
@@ -19,15 +17,23 @@ logger = logging.getLogger('process-dropships')
 def __post_submit_order(order_xml):
     return requests.post(
         f"{url}/SubmitOrder",
-        data=f"UserID={username}&Password={password}&OrderInfo={order_xml}",
+        data=f"UserID={__get_user()}&Password={__get_pass()}&OrderInfo={order_xml}",
         headers=headers)
 
 
 def __post_get_tracking(PONumber):
     return requests.post(
         f"{url}/GetTrackingInfo",
-        data=f"UserID={username}&Password={password}&PONumber={PONumber}&OrderNumber=",
+        data=f"UserID={__get_user()}&Password={__get_pass()}&PONumber={PONumber}&OrderNumber=",
         headers=headers)
+
+
+def __get_user():
+    return config.taw_username
+
+
+def __get_pass():
+    return config.taw_password
 
 
 def submit_dropships():
