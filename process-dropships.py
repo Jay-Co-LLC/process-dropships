@@ -6,18 +6,18 @@ import meyer
 
 log_file = f"LOG-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.txt"
 logger = logging.getLogger('process-dropships')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 logger.addHandler(logging.FileHandler(log_file))
 logger.addHandler(logging.StreamHandler())
 
 
 def submit_dropships():
-    #taw.submit_dropships()
+    taw.submit_dropships()
     meyer.submit_dropships()
 
 
 def get_tracking():
-    #taw.get_tracking()
+    taw.get_tracking()
     meyer.get_tracking()
 
 

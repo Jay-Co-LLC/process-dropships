@@ -84,3 +84,11 @@ def post_comment(order_id, comment):
 
 def post_shipping_info(order_id, data):
 	return requests.post(f"{url}/order/{order_id}/shipping_info", data=json.dumps(data), headers=__get_headers())
+
+
+def get_supplier_sku(product_obj, supplier_id):
+	return_sku = None
+	for supplier in product_obj['suppliers']:
+		if supplier['id'] == supplier_id:
+			return_sku = supplier['supplier_sku']
+	return return_sku

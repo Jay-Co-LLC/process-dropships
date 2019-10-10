@@ -91,11 +91,7 @@ def submit_dropships():
                     # Get product object from ordoro for each product
                     component_obj = ordoro.get_product(eachComponent['sku'])
 
-                    component_sku = ''
-                    # Get the supplier sku of the product
-                    for eachSupplier in component_obj['suppliers']:
-                        if eachSupplier['id'] == ordoro.supplier_taw_id:
-                            component_sku = eachSupplier['supplier_sku']
+                    component_sku = ordoro.get_supplier_sku(component_obj, ordoro.supplier_taw_id)
 
                     # Get the quantity of the product included in the kit
                     component_qty = eachComponent['quantity']
@@ -107,13 +103,7 @@ def submit_dropships():
                     parsed_order['Parts'].append({'PartNo': component_sku, 'Qty': needed_qty})
             else:
                 # If not a kit, just add the supplier sku and quantity to the order
-                taw_sku = ''
-
-                # Loop through suppliers until you find TAW
-                for eachSupplier in rob['suppliers']:
-                    if eachSupplier['id'] == ordoro.supplier_taw_id:
-                        taw_sku = eachSupplier['supplier_sku']
-
+                taw_sku = ordoro.get_supplier_sku(rob, ordoro.supplier_taw_id)
                 parsed_order['Parts'].append({'PartNo': taw_sku, 'Qty': eachLine['quantity']})
 
         for eachTag in eachOrder['tags']:
