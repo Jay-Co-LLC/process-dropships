@@ -92,3 +92,39 @@ def get_supplier_sku(product_obj, supplier_id):
 		if supplier['id'] == supplier_id:
 			return_sku = supplier['supplier_sku']
 	return return_sku
+
+
+def get_product_list(lines, supplier_id):
+	return_list = []
+	for line in lines:
+		# Get the ordoro SKU
+		ord_sku = line['sku']
+
+		# Get the product from ordoro
+		product = get_product(ord_sku)
+
+		# If it's a kit...
+		if product['is_kit_parent']:
+			# Get kit quantity
+			kit_qty = line['quantity']
+
+			# Loop through kit_components
+			for component in product['kit_components']:
+				# Get product object from ordoro for each product
+				component_obj = get_product(component['sku'])
+
+				component_sku = get_supplier_sku(component_obj, supplier_id)
+
+				# Get the quantity of the product included in the kit
+				component_qty = component['quantity']
+
+				# quantity needed = quantity included in kit * kit quantity
+				needed_qty = int(component_qty * kit_qty)
+
+				# Add product to parsed_order['Parts']
+				return_list.append({'sku': component_sku, 'qty': needed_qty})
+		else:
+			# If not a kit, just add the supplier sku and quantity to the order
+			sku = get_supplier_sku(product, supplier_id)
+			return_list.append({'sku': sku, 'qty': line['quantity']})
+	return return_list

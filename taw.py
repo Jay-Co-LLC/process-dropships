@@ -74,37 +74,9 @@ def submit_dropships():
         parsed_order['ShipTo']['Country'] = eachOrder['shipping_address']['country']
         parsed_order['Parts'] = []
 
-        for eachLine in eachOrder['lines']:
-            # Get the ordoro SKU
-            ord_sku = eachLine['sku']
-
-            # Get the product from ordoro
-            rob = ordoro.get_product(ord_sku)
-
-            # If it's a kit...
-            if rob['is_kit_parent']:
-                # Get kit quantity
-                kit_qty = eachLine['quantity']
-
-                # Loop through kit_components
-                for eachComponent in rob['kit_components']:
-                    # Get product object from ordoro for each product
-                    component_obj = ordoro.get_product(eachComponent['sku'])
-
-                    component_sku = ordoro.get_supplier_sku(component_obj, ordoro.supplier_taw_id)
-
-                    # Get the quantity of the product included in the kit
-                    component_qty = eachComponent['quantity']
-
-                    # quantity needed = quantity included in kit * kit quantity
-                    needed_qty = int(component_qty * kit_qty)
-
-                    # Add product to parsed_order['Parts']
-                    parsed_order['Parts'].append({'PartNo': component_sku, 'Qty': needed_qty})
-            else:
-                # If not a kit, just add the supplier sku and quantity to the order
-                taw_sku = ordoro.get_supplier_sku(rob, ordoro.supplier_taw_id)
-                parsed_order['Parts'].append({'PartNo': taw_sku, 'Qty': eachLine['quantity']})
+        product_list = ordoro.get_product_list(eachOrder['lines'], ordoro.supplier_taw_id)
+        for product in product_list:
+            parsed_order['Parts'].append({'PartNo': product['sku'], 'Qty': product['qty']})
 
         for eachTag in eachOrder['tags']:
             if eachTag['text'] == 'Signature Required':

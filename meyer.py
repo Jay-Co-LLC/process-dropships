@@ -81,38 +81,9 @@ def submit_dropships():
         else:
             order_info['ShipToCountry'] = shipinf['country']
 
-        # Loop through items/kits and add items and quantities to dictionary
-        for eachLine in order['lines']:
-            # Get the ordoro SKU
-            ord_sku = eachLine['sku']
-
-            # Get the product from ordoro
-            rob = ordoro.get_product(ord_sku)
-
-            # If it's a kit...
-            if rob['is_kit_parent']:
-                # Get kit quantity
-                kit_qty = eachLine['quantity']
-
-                # Loop through kit_components
-                for eachComponent in rob['kit_components']:
-                    # Get product object from ordoro for each product
-                    component_obj = ordoro.get_product(eachComponent['sku'])
-
-                    component_sku = ordoro.get_supplier_sku(component_obj, ordoro.supplier_meyer_id)
-
-                    # Get the quantity of the product included in the kit
-                    component_qty = eachComponent['quantity']
-
-                    # quantity needed = quantity included in kit * kit quantity
-                    needed_qty = int(component_qty * kit_qty)
-
-                    # Add product to parsed_order['Parts']
-                    order_info['Items'].append({'ItemNumber': component_sku, 'Quantity': needed_qty})
-            else:
-                # If not a kit, just add the supplier sku and quantity to the order
-                mey_sku = ordoro.get_supplier_sku(rob, ordoro.supplier_meyer_id)
-                order_info['Items'].append({'ItemNumber': mey_sku, 'Quantity': eachLine['quantity']})
+        product_list = ordoro.get_product_list(order['lines'], ordoro.supplier_meyer_id)
+        for product in product_list:
+            order_info['Items'].append({'ItemNumber': product['sku'], 'Quantity': product['qty']})
 
         # Send to Meyer
         logger.info("Sending order to Meyer...")
