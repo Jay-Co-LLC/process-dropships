@@ -193,8 +193,8 @@ def submit_dropships():
 
 
 def get_tracking():
-    logger.info("Requesting all orders with 'Awaiting Tracking' from ordoro...")
-    robj = ordoro.get_await_track_orders()
+    logger.info("Requesting all TAW orders with 'Awaiting Tracking' from Ordoro...")
+    robj = ordoro.get_await_track_orders(ordoro.supplier_taw_id)
 
     ord_orders = robj['order']
 
