@@ -18,6 +18,9 @@ def get_tracking():
     taw.get_tracking()
 
 
+# Sets credentials in config based on 'test' flag
+cfg.setup_env()
+
 inp = ''
 
 while inp.lower() != 'q':
@@ -40,7 +43,7 @@ while inp.lower() != 'q':
             exit()
 
         if inp == '4':
-            cfg.test = not cfg.test
+            cfg.switch_modes()
 
         if inp in ['1', '3']:
             submit_dropships()

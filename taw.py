@@ -50,6 +50,10 @@ def submit_dropships():
         if config.test and 'test' not in parsed_order['PONumber'].lower():
             continue
 
+        # If not in 'test' mode, do not process orders with 'test' in the order number
+        if not config.test and 'test' in parsed_order['PONumber'].lower():
+            continue
+
         logger.info(f"Parsing {parsed_order['PONumber']}...")
 
         parsed_order['ReqDate'] = eachOrder['order_placed_date']
@@ -195,6 +199,10 @@ def get_tracking():
 
         # If in 'test' mode, only process orders with 'test' in the order number
         if config.test and 'test' not in PONumber.lower():
+            continue
+
+        # If not in 'test' mode, do not process orders with 'test' in the order number
+        if not config.test and 'test' in PONumber.lower():
             continue
 
         logger.info(f"\n\r---- {PONumber} ----")
