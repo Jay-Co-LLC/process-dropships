@@ -49,12 +49,8 @@ def submit_dropships():
 
     # Loop through orders
     for order in orders:
-        # If in 'test' mode, only process orders with 'test' in the order number
-        if config.test and 'test' not in order['order_number'].lower():
-            continue
-
-        # If not in 'test' mode, do not process orders with 'test' in the order number
-        if not config.test and 'test' in order['order_number'].lower():
+        # Determine if order should be skipped based on what mode we're in
+        if config.should_skip(order['order_number']):
             continue
 
         logger.info(f"Processing order {order['order_number']}...")
@@ -105,7 +101,7 @@ def submit_dropships():
 
         logger.info(f"Done submitting order {order['order_number']}.")
 
-    logger.info("Done submitting Meyer dropships.")
+    logger.info("Done submitting Meyer dropships.\n\r")
 
 
 def get_tracking():
@@ -123,12 +119,8 @@ def get_tracking():
 
     # Loop through orders
     for order in orders:
-        # If in 'test' mode, only process orders with 'test' in the order number
-        if config.test and 'test' not in order['order_number'].lower():
-            continue
-
-        # If not in 'test' mode, do not process orders with 'test' in the order number
-        if not config.test and 'test' in order['order_number'].lower():
+        # Determine if order should be skipped based on what mode we're in
+        if config.should_skip(order['order_number']):
             continue
 
         logger.info(f"Processing order {order['order_number']}...")
@@ -184,4 +176,4 @@ def get_tracking():
 
         logger.info(f"Finished applying tracking for Ordoro Order {order['order_number']}.\n\r")
 
-    logger.info("Finished getting tracking info from Meyer.")
+    logger.info("Finished getting tracking info from Meyer.\n\r")

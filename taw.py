@@ -44,21 +44,16 @@ def submit_dropships():
 
     ord_orders = robj['order']
 
-    logger.info(f"Found {len(ord_orders)} to process.\n\r\n\r")
+    logger.info(f"Found {len(ord_orders)} to process.")
 
     for eachOrder in ord_orders:
-        # PARSE ORDER INFO FROM ORDORO ###
+        # Determine if order should be skipped based on what mode we're in
+        if config.should_skip(eachOrder['order_number']):
+            continue
+
         parsed_order = dict()
 
         parsed_order['PONumber'] = eachOrder['order_number']
-
-        # If we're in 'test' mode, only process orders with 'test' in the order number
-        if config.test and 'test' not in parsed_order['PONumber'].lower():
-            continue
-
-        # If not in 'test' mode, do not process orders with 'test' in the order number
-        if not config.test and 'test' in parsed_order['PONumber'].lower():
-            continue
 
         logger.info(f"Parsing {parsed_order['PONumber']}...")
 
@@ -151,7 +146,7 @@ def submit_dropships():
 
         logger.info(f"Done processing order number {parsed_order['PONumber']}")
 
-    logger.info("Done submitting TAW dropships.")
+    logger.info("Done submitting TAW dropships.\n\r")
 
 
 def get_tracking():
@@ -163,15 +158,11 @@ def get_tracking():
     logger.info(f"Found {len(ord_orders)} to process.")
 
     for eachOrder in ord_orders:
+        # Determine if order should be skipped based on what mode we're in
+        if config.should_skip(eachOrder['order_number']):
+            continue
+
         PONumber = eachOrder['order_number']
-
-        # If in 'test' mode, only process orders with 'test' in the order number
-        if config.test and 'test' not in PONumber.lower():
-            continue
-
-        # If not in 'test' mode, do not process orders with 'test' in the order number
-        if not config.test and 'test' in PONumber.lower():
-            continue
 
         logger.info(f"\n\r---- {PONumber} ----")
         logger.info("Requesting tracking info from TAW...")
@@ -259,4 +250,4 @@ def get_tracking():
 
         logger.info(f"Finished.")
         logger.info(f"---- {PONumber} ----\n\r")
-    logger.info(f"Done getting tracking info.")
+    logger.info(f"Done getting tracking info.\n\r")

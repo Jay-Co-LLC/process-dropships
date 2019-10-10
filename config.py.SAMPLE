@@ -11,31 +11,59 @@ taw_password = None
 
 taw_url = #TAW API SERVICES URL#
 
-ord_test_auth = #TEST ORDORO AUTH KEY#
-ord_live_auth = #LIVE ORDORO AUTH KEY#
+ord_test_auth = #ORDORO TEST AUTH KEY#
+ord_live_auth = #ORDORO LIVE AUTH KEY#
 
 ord_auth = None
 
 ord_url = #ORDER-RELATED ORDORO API URL#
 ord_legacy_url = #NON-ORDER-RELATED ORDORO API URL#
 
+meyer_test_auth = #MEYER TEST AUTH KEY#
+meyer_live_auth = #MEYER LIVE AUTH KEY#
+
+meyer_auth = None
+
+meyer_test_url = #MEYER TEST API URL#
+meyer_live_url = #MEYER LIVE API URL#
+
+meyer_url = None
+
 
 def setup_env():
     global taw_username
     global taw_password
     global ord_auth
+    global meyer_auth
+    global meyer_url
 
     if test:
         taw_username = test_taw_username
         taw_password = test_taw_password
         ord_auth = ord_test_auth
+        meyer_auth = meyer_test_auth
+        meyer_url = meyer_test_url
     else:
         taw_username = live_taw_username
         taw_password = live_taw_password
         ord_auth = ord_live_auth
+        meyer_auth = meyer_live_auth
+        meyer_url = meyer_live_url
 
 
 def switch_modes():
     global test
     test = not test
     setup_env()
+
+
+def should_skip(order_number):
+    # If in 'test' mode, only process orders with 'test' in the order number
+    if test and 'test' not in order_number.lower():
+        return True
+
+    # If not in 'test' mode, do not process orders with 'test' in the order number
+    if not test and 'test' in order_number.lower():
+        return True
+
+    return False
