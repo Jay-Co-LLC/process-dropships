@@ -49,6 +49,7 @@ def submit_dropships():
     for eachOrder in ord_orders:
         # Determine if order should be skipped based on what mode we're in
         if config.should_skip(eachOrder['order_number']):
+            logger.info(f"Skipping order {eachOrder['order_number']}.")
             continue
 
         parsed_order = dict()
@@ -110,11 +111,17 @@ def submit_dropships():
         xml_pt4 = "</Order>"
         full_xml = f"{xml_pt1}{xml_pt2}{xml_pt3}{xml_pt4}"
 
-        logger.info("Sending order to TAW...")
+        logger.info(f"Sending order {eachOrder['order_number']} to TAW...")
         logger.debug(f"{full_xml}")
 
         # SEND ORDER TO TAW
-        r = __post_submit_order(full_xml)
+        try:
+            r = __post_submit_order(full_xml)
+        except Exception as err:
+            logger.info(f"Unable to submit order to TAW. Error:")
+            logger.info(f"{err}")
+            logger.info("Skipping.\n\r")
+            continue
 
         try:
             # PARSE XML RESPONSE FROM TAW
@@ -144,7 +151,7 @@ def submit_dropships():
         logger.info("Removing 'Dropship Ready' tag...")
         ordoro.delete_tag_drop_ready(parsed_order['PONumber'])
 
-        logger.info(f"Done processing order number {parsed_order['PONumber']}")
+        logger.info(f"Done processing order number {parsed_order['PONumber']}.\n\r")
 
     logger.info("Done submitting TAW dropships.\n\r")
 
@@ -160,11 +167,12 @@ def get_tracking():
     for eachOrder in ord_orders:
         # Determine if order should be skipped based on what mode we're in
         if config.should_skip(eachOrder['order_number']):
+            logger.info(f"Skipping order {eachOrder['order_number']}.\n\r")
             continue
 
         PONumber = eachOrder['order_number']
 
-        logger.info(f"\n\r---- {PONumber} ----")
+        logger.info(f"Processing order {PONumber}...")
         logger.info("Requesting tracking info from TAW...")
 
         # ASK FOR TRACKING INFO FROM TAW
@@ -178,10 +186,10 @@ def get_tracking():
 
             records = root.findall('Record')
             if len(records) < 1:
-                logger.info("No records received, skipping.")
+                logger.info("No records received, skipping.\n\r")
                 continue
 
-            logger.info(f"{len(records)} records received, checking for tracking info...\n\r")
+            logger.info(f"{len(records)} records received, checking for tracking info...")
 
             i = 1
             for record in records:
@@ -196,16 +204,11 @@ def get_tracking():
                         logger.info("No tracking number found. Skipping.\n\r")
                         continue
 
-                    logger.info(f"Tracking number: {data['tracking_number']}")
-
                     order_date_str = record.find('OrderDate').text
                     order_date_obj = datetime.datetime.strptime(order_date_str, '%m/%d/%Y')
                     order_date_str = order_date_obj.strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
                     data['ship_date'] = order_date_str
-
-                    logger.info(f"Ship date: {data['ship_date']}")
-
                     data['carrier_name'] = record.find('Type').text.strip()
 
                     # IF NO VENDOR, LOG IT AND GO ON TO THE NEXT ONE
@@ -216,16 +219,14 @@ def get_tracking():
                     data['shipping_method'] = "ground"
                     data['cost'] = 14
 
-                    logger.info(f"Vendor: {data['carrier_name']}")
-                    logger.info("Sending to ordoro...")
+                    logger.info(f"Applying {data['tracking_number']} as official shipping method...")
+                    logger.debug(f"{data}")
 
                     # SEND TRACKING INFO TO ORDORO
                     r = ordoro.post_shipping_info(PONumber, data)
 
-                    logger.info(f"[{PONumber}] Removing 'Awaiting Tracking' tag...")
-                    r = ordoro.delete_tag_await_track(PONumber)
-
-                    logger.debug(f"[{PONumber}] Response from ordoro:\n\r{r.content.decode('UTF-8')}")
+                    logger.info(f"Removing 'Awaiting Tracking' tag...")
+                    ordoro.delete_tag_await_track(PONumber)
                 else:
                     taw_invoice_num = record.find('InvoiceNumber').text.strip()
                     tracking_number = record.find('TrackNum').text.strip()
@@ -233,6 +234,7 @@ def get_tracking():
                     if tracking_number == "":
                         continue
 
+                    logger.info(f"Applying {tracking_number} in a comment...")
                     ordoro.post_comment(
                         PONumber,
                         f'Additional tracking information: '
@@ -248,6 +250,6 @@ def get_tracking():
                 f"\n\rLast Response:"
                 f"\n\r{r.content.decode('UTF-8')}")
 
-        logger.info(f"Finished.")
-        logger.info(f"---- {PONumber} ----\n\r")
-    logger.info(f"Done getting tracking info.\n\r")
+        logger.info(f"Finished applying tracking for Ordoro order {PONumber}.\n\r")
+
+    logger.info(f"Finished getting tracking info from TAW.\n\r")

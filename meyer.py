@@ -45,12 +45,13 @@ def submit_dropships():
 
     orders = robj['order']
 
-    logger.info(f"Found {robj['count']} orders to process.")
+    logger.info(f"Found {robj['count']} to process.")
 
     # Loop through orders
     for order in orders:
         # Determine if order should be skipped based on what mode we're in
         if config.should_skip(order['order_number']):
+            logger.info(f"Skipping order {order['order_number']}.")
             continue
 
         logger.info(f"Processing order {order['order_number']}...")
@@ -82,24 +83,32 @@ def submit_dropships():
             order_info['Items'].append({'ItemNumber': product['sku'], 'Quantity': product['qty']})
 
         # Send to Meyer
-        logger.info("Sending order to Meyer...")
+        logger.info(f"Sending order {order['order_number']} to Meyer...")
         logger.debug(f"{order_info}")
 
         rob = __post_create_order(order_info)
-        mey_orders = rob['Orders']
+        logger.info(f"Parsing response from Meyer...")
 
-        for mey_order in mey_orders:
-            # Loop through responses and add order ids returned as comments
-            logger.info(f"Adding Meyer order number {mey_order['OrderNumber']} as comment...")
-            ordoro.post_comment(order['order_number'], f"[SR-MID]: {mey_order['OrderNumber']}")
+        try:
+            mey_orders = rob['Orders']
 
-        logger.info("Removing 'Dropship Ready' tag...")
-        ordoro.delete_tag_drop_ready(order['order_number'])
+            for mey_order in mey_orders:
+                # Loop through responses and add order ids returned as comments
+                logger.info(f"Adding Meyer order number {mey_order['OrderNumber']} as comment...")
+                ordoro.post_comment(order['order_number'], f"[SR-MID]: {mey_order['OrderNumber']}")
 
-        logger.info("Adding 'Awaiting Tracking' tag...")
-        ordoro.post_tag_await_track(order['order_number'])
+            logger.info("Removing 'Dropship Ready' tag...")
+            ordoro.delete_tag_drop_ready(order['order_number'])
 
-        logger.info(f"Done submitting order {order['order_number']}.")
+            logger.info("Adding 'Awaiting Tracking' tag...")
+            ordoro.post_tag_await_track(order['order_number'])
+        except Exception as err:
+            logger.info("Unable to parse response from Meyer. Error:")
+            logger.info(f"{err}")
+            logger.info("Skipping.\n\r")
+            continue
+
+        logger.info(f"Done submitting order {order['order_number']}.\n\r")
 
     logger.info("Done submitting Meyer dropships.\n\r")
 
@@ -115,12 +124,13 @@ def get_tracking():
 
     orders = rob['order']
 
-    logger.info(f"Found {rob['count']} orders to process.")
+    logger.info(f"Found {rob['count']} to process.")
 
     # Loop through orders
     for order in orders:
         # Determine if order should be skipped based on what mode we're in
         if config.should_skip(order['order_number']):
+            logger.info(f"Skipping order {order['order_number']}.\n\r")
             continue
 
         logger.info(f"Processing order {order['order_number']}...")
@@ -136,10 +146,10 @@ def get_tracking():
 
                 # If what we get back isn't a list, it means nothing was found
                 if not isinstance(tracking_info, list):
-                    logger.info(f"Could not retrieve tracking info: {tracking_info['errorMessage']}, skipping.")
+                    logger.info(f"Could not retrieve tracking info: {tracking_info['errorMessage']}, skipping.\n\r")
                     continue
 
-                logger.info(f"Found tracking info, adding...")
+                logger.info(f"Tracking info retrieved, processing...")
 
                 for tracking in tracking_info:
                     # If this is the first tracking number, we add it as the official shipping method
@@ -172,8 +182,8 @@ def get_tracking():
                         )
                         num_tracking = num_tracking + 1
 
-                logger.info(f"Finished applying tracking for Meyer Order {mey_order_id}.")
+                logger.info(f"Finished applying tracking for Meyer order {mey_order_id}.")
 
-        logger.info(f"Finished applying tracking for Ordoro Order {order['order_number']}.\n\r")
+        logger.info(f"Finished applying tracking for Ordoro order {order['order_number']}.\n\r")
 
     logger.info("Finished getting tracking info from Meyer.\n\r")
