@@ -105,6 +105,7 @@ def submit_dropships():
         except Exception as err:
             logger.info("Unable to parse response from Meyer. Error:")
             logger.info(f"{err}")
+            logger.debug(f"{rob}")
             logger.info("Skipping.\n\r")
             continue
 
