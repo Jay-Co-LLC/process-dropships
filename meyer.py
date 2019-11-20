@@ -2,6 +2,7 @@ import requests
 import json
 import config
 import ordoro
+import errors
 import logging
 
 logger = logging.getLogger('process-dropships')
@@ -78,9 +79,14 @@ def submit_dropships():
         else:
             order_info['ShipToCountry'] = shipinf['country']
 
-        product_list = ordoro.get_product_list(order['lines'], ordoro.supplier_meyer_id)
-        for product in product_list:
-            order_info['Items'].append({'ItemNumber': product['sku'], 'Quantity': product['qty']})
+        try:
+            product_list = ordoro.get_product_list(order['lines'], ordoro.supplier_meyer_id)
+            for product in product_list:
+                order_info['Items'].append({'ItemNumber': product['sku'], 'Quantity': product['qty']})
+        except errors.SupplierSKUNotFound as e:
+            logger.error(f"Error: {e.msg()}")
+            logger.error("Unable to parse product list. Skipping order.")
+            continue
 
         # Send to Meyer
         logger.info(f"Sending order {order['order_number']} to Meyer...")

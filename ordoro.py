@@ -1,6 +1,7 @@
 import requests
 import json
 import config
+import errors
 
 url = config.ord_url
 legacy_url = config.ord_legacy_url
@@ -92,7 +93,9 @@ def get_supplier_sku(product_obj, supplier_id):
     for supplier in product_obj['suppliers']:
         if supplier['id'] == supplier_id:
             return_sku = supplier['supplier_sku']
-    return return_sku
+
+    if return_sku is None:
+        raise errors.SupplierSKUNotFound(product_obj['sku'])
 
 
 def get_product_list(lines, supplier_id):
