@@ -117,10 +117,13 @@ def submit_dropships():
         # SEND ORDER TO TAW
         try:
             r = __post_submit_order(full_xml)
+        except requests.exceptions.ConnectionError:
+            logger.error("Error! Unable to connect to TAW services. Skipping order.")
+            continue
         except Exception as err:
-            logger.info(f"Unable to submit order to TAW. Error:")
-            logger.info(f"{err}")
-            logger.info("Skipping.\n\r")
+            logger.error(f"Error! Unable to submit order to TAW. Error returned:")
+            logger.error(f"{err}")
+            logger.error(f"Skipping order.")
             continue
 
         try:
@@ -176,7 +179,11 @@ def get_tracking():
         logger.info("Requesting tracking info from TAW...")
 
         # ASK FOR TRACKING INFO FROM TAW
-        r = __post_get_tracking(PONumber)
+        try:
+            r = __post_get_tracking(PONumber)
+        except requests.exceptions.ConnectionError:
+            logger.error("Error! Unable to connect to TAW services. Skipping order.")
+            continue
 
         logger.debug(f"Response from TAW:\n\r{r.content.decode('UTF-8')}")
 
