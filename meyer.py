@@ -61,7 +61,7 @@ def submit_dropships():
 
         # Create dictionary for order information
         order_info = {
-            'ShipMethod': 'UPS',
+            'ShipMethod': 'UPS GRND RES',
             'ShipToName': shipinf['name'],
             'ShipToAddress1': shipinf['street1'],
             'ShipToAddress2': shipinf['street2'],
