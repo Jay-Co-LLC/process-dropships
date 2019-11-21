@@ -90,12 +90,15 @@ def post_shipping_info(order_id, data):
 
 def get_supplier_sku(product_obj, supplier_id):
     return_sku = None
+
     for supplier in product_obj['suppliers']:
         if supplier['id'] == supplier_id:
             return_sku = supplier['supplier_sku']
 
     if return_sku is None:
         raise errors.SupplierSKUNotFound(product_obj['sku'])
+
+    return return_sku
 
 
 def get_product_list(lines, supplier_id):

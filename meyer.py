@@ -97,7 +97,21 @@ def submit_dropships():
 
         try:
             mey_orders = rob['Orders']
+        except KeyError:
+            logger.error("Error! Unexpected response from Meyer.")
+            logger.error(f"Error code: {rob['errorCode']}")
+            logger.error(f"Error message: {rob['errorMessage']}")
 
+            logger.info("Removing 'Dropship Ready' tag...")
+            ordoro.delete_tag_drop_ready(order['order_number'])
+
+            logger.info("Adding 'Dropship Failed' tag...")
+            ordoro.post_tag_drop_fail(order['order_number'])
+
+            logger.info("Skipping order.")
+            continue
+
+        try:
             for mey_order in mey_orders:
                 # Loop through responses and add order ids returned as comments
                 logger.info(f"Adding Meyer order number {mey_order['OrderNumber']} as comment...")
